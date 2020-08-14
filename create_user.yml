@@ -1,6 +1,7 @@
 ---
 - name: Creating User
   hosts: all
+  gather_facts: no
   become: true
   tasks:
   - name: Creating user Gaurav
