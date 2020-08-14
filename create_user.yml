@@ -7,3 +7,6 @@
   - name: Creating user Gaurav
     user:
       name: Gaurav
+
+
+# User Module is used to create user
