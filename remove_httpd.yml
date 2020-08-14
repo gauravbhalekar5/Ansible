@@ -1,0 +1,10 @@
+---
+- name: Removing Package
+  hosts: all
+  gather_facts: no
+  become: true
+  tasks:
+  - name: Removing the package
+    yum:
+      name: httpd
+      state: removed
