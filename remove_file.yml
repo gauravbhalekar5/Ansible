@@ -1,0 +1,17 @@
+# file module is also used for remove files and directories
+---
+- name: Removing Files and Directories
+  hosts: all
+  gather_facts: no
+  become: true
+
+  tasks:
+  - name: Remove a File
+    file:
+      path: /home/ansadmin/testing
+      state: absent
+
+  - name: Remove a Directory
+    file:
+      path: /opt/DevOps
+      state: absent
