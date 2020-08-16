@@ -1,0 +1,32 @@
+# file module is used to create files and directories as well as soft and hard link
+---
+- name: Creating Files and Directories
+  hosts: all
+  gather_facts: no
+  become: true
+
+  tasks:
+  - name: Create a File
+    file:
+      path: /home/ansadmin/testing
+      state: touch
+      mode: 0755
+
+  - name: Create a Directory
+    file:
+      path: /opt/DevOps
+      state: directory
+
+  - name: Create a Directory
+    file:
+      path: /opt/technology
+      state: directory
+      owner: ansadmin
+      group: ansadmin
+      mode: 0775
+      recurse: yes
+
+  - name: Copy a file
+    copy:
+      src: /home/ansadmin/index.html
+      dest: /opt/technology
