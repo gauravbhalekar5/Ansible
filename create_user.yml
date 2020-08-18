@@ -1,12 +1,26 @@
+# Ansible Variable
+
+# Psssing Variable in the playbook
+
 ---
 - name: Creating User
   hosts: all
   gather_facts: no
   become: true
-  tasks:
-  - name: Creating user Gaurav
-    user:
-      name: Gaurav
+  vars_files: 
+    - /home/ansadmin/playbooks/users.yml
+  # vars: 
+  #  user_name: Robert
 
+  tasks: 
+  - name: Create a User called {{ user_name }}
+    user: 
+      name: "{{ user_name }}"
 
-# User Module is used to create user
+  - name: Create a directory
+    file: 
+      path: /opt/{{ user_name }}_temp
+      state: directory
+      owner: "{{ user_name }}"
+      group: "{{ user_name }}"
+      mode: 0755
