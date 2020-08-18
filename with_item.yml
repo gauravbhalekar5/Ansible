@@ -1,0 +1,17 @@
+# with_iteam is used for installing multiple package at a time
+
+---
+- name: installing multiple package
+  hosts: all
+  gather_facts: no
+  become: true
+
+  tasks: 
+  - name: Install multiple package
+    yum: 
+      name: "{{ item }}"
+      state: installed
+    with_items:
+      - git
+      - telnet
+      - vsftpd

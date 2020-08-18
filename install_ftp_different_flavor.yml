@@ -1,0 +1,44 @@
+# Installing packages on different flavor of linux server at the same time
+
+---
+- name: Installing Package
+  hosts: all
+  gather_facts: yes
+  become: true
+
+  tasks:
+    - name: Installing the latest version of FTP on Linux Server
+      yum:
+        name: vsftpd
+        state: installed
+      when: ansible_os_family == "RedHat"
+
+    - name: Starting the service of FTP
+      service:
+        name: vsftpd
+        state: started
+      when: ansible_os_family == "RedHat"
+
+    - name: Enabled the Service
+      service:
+        name: vsftpd
+        enabled: yes
+      when: ansible_os_family == "RedHat"
+
+    - name: Installing the latest version of FTP on Ubuntu Server
+      apt:
+        name: vsftpd
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Starting the service of FTP
+      service:
+        name: vsftpd
+        state: started
+      when: ansible_os_family == "Debian"
+
+    - name: Enabled the Service
+      service:
+        name: vsftpd
+        enabled: yes
+      when: ansible_os_family == "Debian"

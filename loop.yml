@@ -1,0 +1,17 @@
+# Using Loop in playbooks
+
+---
+- name: Installing and Removing package at the same time
+  hosts: all
+  gather_facts: no
+  become: true
+
+  tasks:
+  - name: Install and Remove package at the same time
+    yum: 
+      name: "{{ item.pkg }}"
+      state: "{{ item.setup }}"
+    loop: 
+      - { pkg: 'git', setup: 'installed' }
+      - { pkg: 'telnet', setup: 'latest' }
+      - { pkg: 'vsftpd', setup: 'removed' }

@@ -1,0 +1,13 @@
+# Instead of using a loop to supply multiple items and specifying `name: "{{ item }}"`, please use `name: ['git', 'telnet', 'vsftpd']` and remove the loop.
+
+---
+- name: Removing multiple package
+  hosts: all
+  gather_facts: no
+  become: true
+
+  tasks:
+  - name: Remove multiple package
+    yum:
+      name: ['git', 'telnet', 'vsftpd'] 
+      state: absent

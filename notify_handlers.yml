@@ -1,0 +1,25 @@
+# notify and handlers exapmple 
+
+---
+- name: Installing Package
+  hosts: all
+  gather_facts: no
+  become: true
+
+  tasks:
+  - name: Install Apache Package 
+    yum: 
+      name: httpd
+      state: installed
+    notify: Start the httpd service
+
+  - name: Copying index.html
+    copy: 
+      src: /home/ansadmin/index.html
+      dest: /var/www/html
+
+  handlers:
+  - name: Start the httpd service
+    service: 
+      name: httpd
+      state: started
