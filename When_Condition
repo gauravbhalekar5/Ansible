@@ -1,116 +1,60 @@
-# Installing packages on different flavor of linux server at the same time
-
+# Installing packages on different flavor of linux server at the same time (with start option)
 ---
-- name: Installing Package
+- name: Installing packages on different flavor of linux
   hosts: all
   gather_facts: yes
-  become: true
+  become: true 
 
   tasks:
-    - name: Installing the apache on Linux Server
-      yum:
-        name: httpd
-        state: installed
-      when: ansible_os_family == "RedHat"
+  - name: Updating System
+    yum: 
+      name: '*'
+      state: latest
+    when: ansible_os_family == "RedHat"
 
-    - name: Starting the service of Apache on Linux Server
-      service:
-        name: httpd
-        state: started
-      when: ansible_os_family == "RedHat"
+  - name: Installing Apache Package on RedHat linux
+    yum:
+      name: httpd
+      state: latest
+    when: ansible_os_family == "RedHat"
 
-    - name: Enabled the Service
-      service:
-        name: httpd
-        enabled: yes
-      when: ansible_os_family == "RedHat"
+  - name: Starting Apache Service on RedHat linux
+    service:
+      name: httpd
+      state: started
+    when: ansible_os_family == "RedHat"
 
-    - name: Updating Ubuntu System
-      apt: 
-        update_cache: yes
+  - name: Enabling Apache Service on RedHat linux
+    service:
+      name: httpd
+      enabled: yes
+    when: ansible_os_family == "RedHat"
 
-    - name: Installing the apache on Ubuntu
-      apt:
-        name: apache2
-        state: present
-      when: ansible_os_family == "Debian"
+  - name: Updating Ubuntu System
+    apt:
+      update_cache: yes
+    when: ansible_os_family == "Debian"
 
-    - name: Starting the service of apache
-      service:
-        name: apache2
-        state: started
-      when: ansible_os_family == "Debian"
+  - name: Installing Apache on Debian Ubuntu 
+    apt:
+      name: apache2
+      state: latest
+    when: ansible_os_family == "Debian"
 
-    - name: Enabled the Service
-      service:
-        name: apache2
-        enabled: yes
-      when: ansible_os_family == "Debian"
+  - name: Starting Apache Service on Debian Ubuntu
+    service: 
+      name: apache2
+      state: started
+    when: ansible_os_family == "Debian"
 
-    - name: Copying index.html 
-      copy: 
-        src: /home/ansadmin/index.html
-        dest: /var/www/html
-        
+  - name: Enabling Apache Service on Debian Ubuntu
+    service:
+      name: apache2
+      enabled: yes
+    when: ansible_os_family == "Debian"
 
-
-
-
-# Installing packages on different flavor of linux server at the same time
-
----
-- name: Installing Package
-  hosts: all
-  gather_facts: yes
-  become: true
-
-  tasks:
-    - name: Installing the apache on Linux Server
-      yum:
-        name: httpd
-        state: installed
-      when: ansible_os_family == "RedHat"
-
-    - name: Starting the service of Apache on Linux Server
-      service:
-        name: httpd
-        state: restarted
-      when: ansible_os_family == "RedHat"
-
-    - name: Enabled the Service
-      service:
-        name: httpd
-        enabled: yes
-      when: ansible_os_family == "RedHat"
-
-    - name: Copying file on Linux
-      copy:
-        src: /home/ansadmin/index.html
-        dest: /var/www/html
-
-    - name: Updating Ubuntu System
-      apt:
-        update_cache: yes
-
-    - name: Installing the apache on Ubuntu
-      apt:
-        name: apache2
-        state: present
-      when: ansible_os_family == "Debian"
-
-    - name: Starting the service of apache
-      service:
-        name: apache2
-        state: restarted
-      when: ansible_os_family == "Debian"
-
-    - name: Enabled the Service
-      service:
-        name: apache2
-        enabled: yes
-      when: ansible_os_family == "Debian"
-
-    - name: Copying index.html
-      copy:
-        src: /home/ansadmin/index.html
-        dest: /var/www/html
+  - name: Copying index.html file on target System
+    copy:
+      src: /home/ansadmin/index.html
+      dest: /var/www/html
+    
