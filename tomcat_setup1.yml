@@ -1,0 +1,35 @@
+# Configuring Apache Tomcat with chdir option also with hardcoded value
+---
+- name: configuring apache tomcat
+  hosts: 172.31.43.215
+  gather_facts: yes
+  become: true
+  
+  tasks: 
+  - name: installing java
+    yum:
+      name: java 
+      state: installed
+  
+  - name: downloading tomcat package
+    get_url:
+      url: https://mirrors.estointernet.in/apache/tomcat/tomcat-8/v8.5.57/bin/apache-tomcat-8.5.57.tar.gz
+      dest: /opt 
+      mode: 0755
+
+  - name: extracting tomcat package
+    unarchive:
+      src: /opt/apache-tomcat-8.5.57.tar.gz
+      dest: /opt
+      remote_src: yes
+
+  - name: change the permission on apache tomcat
+    file:
+      path: /opt/apache-tomcat-8.5.57
+      mode: 0755
+      recurse: yes
+
+  - name: starting tomcat service 
+    shell: nohup ./startup.sh
+    args:
+      chdir: /opt/apache-tomcat-8.5.57/bin

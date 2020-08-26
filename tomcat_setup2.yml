@@ -1,0 +1,44 @@
+# Configuring Apache Tomcat with chdir option with defining variable
+# Passing Variable file externally
+# tomcat_url: "https://mirrors.estointernet.in/apache/tomcat/tomcat-8/v8.5.57/bin/apache-tomcat-8.5.57.tar.gz"
+# tomcat_package: apache-tomcat-8.5.57
+---
+- name: configuring apache tomcat
+  hosts: 172.31.44.146
+  gather_facts: yes
+  become: true
+  vars_files:
+    - /home/ansadmin/playbooks/tomcat_vars.yml 
+
+  tasks:
+  - name: install java
+    yum: 
+      name: java
+      state: latest
+
+  - name: download tomcat package
+    get_url:
+      url: "{{ tomcat_url }}"
+      dest: /opt 
+      mode: 0755
+
+  - name: extract tomcat package
+    unarchive:
+      src: /opt/{{ tomcat_package }}.tar.gz
+      dest: /opt
+      remote_src: yes
+
+  - name: change the permission on apache tomcat 
+    file: 
+      path: /opt/{{ tomcat_package }}
+      mode: 0755
+      recurse: yes
+
+  - name: start the tomcat service
+    command: nohup ./startup.sh
+    args:
+      chdir: /opt/{{ tomcat_package }}/bin
+    
+
+  
+    
