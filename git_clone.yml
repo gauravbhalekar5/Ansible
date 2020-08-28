@@ -1,0 +1,14 @@
+# Clone Git repository by passing file externally
+---
+- name: clone git repository
+  hosts:  172.31.43.215
+  gather_facts: yes
+  become: true
+  vars_files:
+    - vault1.yml
+
+  tasks: 
+  - git: 
+      repo: https://{{user_name}}:{{password}}@github.com/gauravbhalekar5/Ansible-Vault.git
+      dest: /home/ansadmin/vault
+
