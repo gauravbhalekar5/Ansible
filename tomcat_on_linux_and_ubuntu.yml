@@ -1,0 +1,58 @@
+# Configuring Apache Tomcat on linux and ubuntu system by passing file externally
+# start apache service with chdir option
+# use when condition
+
+---
+- name: configuring apache tomcat on linux and ubnutu system
+  hosts: all 
+  gather_facts: yes
+  become: true
+  vars_files:
+    - /home/ansadmin/playbooks/tomcat_vars.yml
+
+  tasks:
+  - name: Updating System
+    yum: 
+      name: '*'
+      state: latest
+    when: ansible_os_family == "RedHat"
+
+  - name: installing java and wget on target system
+    yum:
+      name: ['java-1.8*', 'wget']
+      state: latest
+    when: ansible_os_family == "RedHat"
+
+  - name: Updating Ubuntu System
+    apt:
+      update_cache: yes
+    when: ansible_os_family == "Debian"
+    
+  - name: installing java and wget on target system
+    apt:
+      name: ['openjdk-8-jdk', 'wget']
+      state: latest    
+    when: ansible_os_family == "Debian"
+
+  - name: downloading apache tomcat package on linux system
+    get_url:
+      url: "{{ tomcat_url }}"
+      dest: /opt
+      mode: 0755
+
+  - name: extracting apache tomcat package on linux system
+    unarchive: 
+      src: /opt/{{ tomcat_package }}.tar.gz
+      dest: /opt
+      remote_src: yes
+
+  - name: change the ownership on the tomcat folder
+    file: 
+      path: /opt/{{ tomcat_package }}
+      mode: 0755
+      recurse: yes
+
+  - name: starting the service of apache on linux system
+    shell: nohup ./startup.sh
+    args: 
+      chdir: /opt/{{ tomcat_package }}/bin 

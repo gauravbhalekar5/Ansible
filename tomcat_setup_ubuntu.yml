@@ -1,0 +1,38 @@
+---
+- name: configuring apache tomcat 
+  hosts: ubuntu_server
+  gather_facts: yes
+  become: true
+
+  tasks: 
+  - name: Updating Ubuntu System
+    apt:
+      update_cache: yes
+      
+  - name: installing java and wget on target system
+    apt: 
+      name: ['openjdk-8-jdk', 'wget']
+      state: latest
+
+  - name: download apache tomcat package
+    get_url:
+      url: https://mirrors.estointernet.in/apache/tomcat/tomcat-8/v8.5.57/bin/apache-tomcat-8.5.57.tar.gz
+      dest: /opt 
+      mode: 0755
+
+  - name: extracting tomcat package
+    unarchive: 
+      src: /opt/apache-tomcat-8.5.57.tar.gz
+      dest: /opt
+      remote_src: yes
+
+  - name: change the permission on tomcat package folder
+    file: 
+      path: /opt/apache-tomcat-8.5.57
+      mode: 0755
+      recurse: yes
+
+  - name: start the service of tomcat
+    shell: nohup ./startup.sh
+    args: 
+      chdir: /opt/apache-tomcat-8.5.57/bin
