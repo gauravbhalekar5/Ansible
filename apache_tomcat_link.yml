@@ -1,0 +1,55 @@
+---
+- name: configuring tomcat
+  hosts: 172.31.44.146
+  gather_facts: yes
+  become: true
+  vars_files:
+    - /home/ansadmin/playbooks/tomcat_vars.yml
+
+  tasks: 
+  - name: installing java and wget
+    yum: 
+      name: ['java-1.8*', 'wget']
+      state: latest
+
+  - name: downloading tomcat package 
+    get_url: 
+      url: "{{ tomcat_url }}"
+      dest: /opt
+      mode: 0755
+
+  - name: extracting the tomcat package
+    unarchive:
+      src: /opt/{{ tomcat_package }}.tar.gz
+      dest: /opt
+      remote_src: yes
+
+  - name: change the permission on tomcat folder
+    file: 
+      path: /opt/{{ tomcat_package }}
+      mode: 0755
+      recurse: yes
+
+  - name: creating link file for tomcat service
+    file: 
+      src: /opt/{{ tomcat_package }}/bin/{{ item.tomcat_script }}
+      dest: /usr/local/bin/{{ item.tomcat_cmd }}
+      state: link
+    loop:
+      - { tomcat_script: 'startup.sh', tomcat_cmd: 'tomcatup' }
+      - { tomcat_script: 'shutdown.sh', tomcat_cmd: 'tomcatdown' }
+    notify: start tomcat service
+
+  - name: change the port number
+    copy: 
+      src: server.xml
+      dest: /opt/{{ tomcat_package }}/conf/server.xml
+    notify: restart tomcat service  
+
+  handlers:
+    - name: start tomcat service
+      shell: nohup /usr/local/bin/tomcatup
+
+    - name: restart tomcat service
+      shell: /usr/local/bin/tomcatdown; nohup /usr/local/bin/tomcatup
+

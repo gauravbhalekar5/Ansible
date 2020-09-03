@@ -1,0 +1,8 @@
+---
+- name: Configuring tomcat 
+  hosts: linux_server
+  gather_facts: yes
+  become: true
+
+  roles:
+    - tomcat_setup_role
