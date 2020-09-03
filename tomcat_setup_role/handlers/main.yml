@@ -1,0 +1,7 @@
+---
+# handlers file for tomcat_setup_roll
+- name: start the service
+  shell: nohup /usr/local/bin/tomcatup
+
+- name: restart the service
+  shell: /usr/local/bin/tomcatdown; nohup /usr/local/bin/tomcatup
