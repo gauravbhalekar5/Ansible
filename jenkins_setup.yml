@@ -1,0 +1,32 @@
+// Setup Jenkins through Ansible
+
+---
+- hosts: all
+  become: true
+  gather_facts: yes
+
+  tasks:
+  - name: Install Java and Wget
+    yum: 
+      name: ['java', 'wget']
+      state: present
+
+  - name: Downloading Jenkins Repo
+    get_url: 
+      url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+      dest: /etc/yum.repos.d/jenkins.repo
+
+  - name: Adding rpm key to jenkisn repo
+    rpm_key:
+      key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+      state: present
+
+  - name: Install Jenkins
+    yum: 
+      name: jenkins
+      state: present
+
+  - name: Start the service of Jenkins
+    service:
+      name: jenkins
+      state: started

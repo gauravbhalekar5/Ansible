@@ -1,0 +1,301 @@
+Ansible Ad-HOC Commands 
+Valaxy Technology
+
+# ansible all -m ping 
+(all means whatever present in the inventory file those all server)
+
+
+# ansible all -m command -a "uptime"  OR ansible all -m command -a "ls -a"
+# ansible all -m "command" -a "touch testfile"
+(command is the module and -a means attribute)
+
+# ansible all -m stat -a "path=/root/testfile"
+stat is the module name and above command we have used to check testfile is present on hosts or not
+
+# ansible all -m yum -a "name=git" -b
+Yum module is used for installing package on hosts machine and -b means become a root while performing command
+
+# ansible all -m user -a "name=Gaurav"
+To create user on hosts machine then we need to use user module
+
+# ansible all -m setup
+The Ansible setup module is used to gather facts about the remote hosts that Ansible is managing. 
+These facts include information about the system hardware, operating system, IP address, network interfaces, installed packages, and other system-level details.
+The setup module is executed automatically by Ansible when a playbook is run, and the information gathered by the module is stored in the "hostvars" variable, which can be used in subsequent tasks and playbooks.
+
+# ansible all -i invnetory.ini -m user -a "user=modi" -b
+Here inventory.ini is customize hosts file and If we want to execute above command on some server not all server.
+So we need to mention our customize hosts file while executing command.
+
+
+The configuration file
+
+Changes can be made and used in a configuration file which will be searched for in the following order:
+
+# cd /opt
+# vi ansible.cfg
+[defaults]
+inventory = /root/inventory.ini
+
+# ansible all -m ping
+ansible.cfg (in the current directory) this statment will call in above command
+
+
+Ansible Module:
+In Ansible, a module is a reusable, standalone piece of code that performs a specific action.
+
+# ansible all --list-hosts
+When the --list-hosts option is used with the ansible command, 
+it will output a list of all the hosts that are defined in the inventory, one host per line. 
+This can be useful for checking the inventory configuration and verifying which hosts are included in the Ansible playbooks or ad-hoc commands.
+
+To Create user using ansible playbook 
+# vi create-user.yml
+
+---
+- name: Create User 
+  hosts: all
+
+  tasks: 
+  - user: 
+      name: Gaurav
+
+
+To Install Package using Ansible Playbook
+# vi install-package.yml
+
+---
+- name: Installing Package 
+  hosts: all
+  become: true
+
+  tasks: 
+  - name: Install httpd package
+    yum: 
+      name: httpd
+      state: present
+
+  - name: starting service
+    service:
+      name: httpd
+      state: started
+
+# file module is used to create files and directories as well as soft and hard link
+---
+- name: Creating Files and Directories
+  hosts: all
+  gather_facts: no
+  become: true
+
+  tasks:
+  - name: Create a File
+    file:
+      path: /home/ansadmin/testing
+      state: touch
+      mode: 0755
+
+  - name: Create a Directory
+    file:
+      path: /opt/DevOps
+      state: directory
+
+  - name: Create a Directory
+    file:
+      path: /opt/technology
+      state: directory
+      owner: ansadmin
+      group: ansadmin
+      mode: 0775
+      recurse: yes
+
+  - name: Copy a file
+    copy:
+      src: /home/ansadmin/index.html
+      dest: /opt/technology
+       
+
+# vi install_and_check-package.yml 
+
+----
+- hosts: all
+  become: true
+
+  tasks:
+  - name: Check if package is installed
+    stat:
+      path: /usr/sbin/vsftpd
+    register: package_check_stat
+
+  - name: Install Package
+    yum:
+      name: vsftpd 
+      state: latest
+    when: not package_check_stat.stat.exists
+
+  - name: Start the service
+    service:
+      name: vsftpd
+      state: started
+
+
+// The not keyword is used to negate the value of package_check.stat.exists. 
+// So, if package_check.stat.exists is true, not package_check.stat.exists will be false, and if package_check.stat.exists is false, not package_check.stat.exists will be true
+
+
+# vi loop.yml  
+// Using Loop in playbooks
+
+---
+- name: Installing and Removing package at the same time
+  hosts: all
+  gather_facts: no
+  become: true
+
+  tasks:
+  - name: Install and Remove package at the same time
+    yum: 
+      name: "{{ item.pkg }}"
+      state: "{{ item.setup }}"
+    loop: 
+      - { pkg: 'git', setup: 'installed' }
+      - { pkg: 'telnet', setup: 'latest' }
+      - { pkg: 'vsftpd', setup: 'removed' }
+
+
+# Installing packages on different flavor of linux server at the same time (with start option)
+---
+- name: Installing packages on different flavor of linux
+  hosts: all
+  gather_facts: yes
+  become: true 
+
+  tasks:
+  - name: Updating System
+    yum: 
+      name: '*'
+      state: latest
+    when: ansible_os_family == "RedHat"
+
+  - name: Installing Apache Package on RedHat linux
+    yum:
+      name: httpd
+      state: latest
+    when: ansible_os_family == "RedHat"
+
+  - name: Starting Apache Service on RedHat linux
+    service:
+      name: httpd
+      state: started
+    when: ansible_os_family == "RedHat"
+
+  - name: Enabling Apache Service on RedHat linux
+    service:
+      name: httpd
+      enabled: yes
+    when: ansible_os_family == "RedHat"
+
+  - name: Updating Ubuntu System
+    apt:
+      update_cache: yes
+    when: ansible_os_family == "Debian"
+
+  - name: Installing Apache on Debian Ubuntu 
+    apt:
+      name: apache2
+      state: latest
+    when: ansible_os_family == "Debian"
+
+  - name: Starting Apache Service on Debian Ubuntu
+    service: 
+      name: apache2
+      state: started
+    when: ansible_os_family == "Debian"
+
+  - name: Enabling Apache Service on Debian Ubuntu
+    service:
+      name: apache2
+      enabled: yes
+    when: ansible_os_family == "Debian"
+
+  - name: Copying index.html file on target System
+    copy:
+      src: /home/ansadmin/index.html
+      dest: /var/www/html
+
+# with_iteam is used for installing multiple package at a time
+
+---
+- name: installing multiple package
+  hosts: all
+  gather_facts: no
+  become: true
+
+  tasks: 
+  - name: Install multiple package
+    yum: 
+      name: "{{ item }}"
+      state: installed
+    with_items:
+      - git
+      - telnet
+      - vsftpd
+
+# notify and handlers exapmple 
+
+---
+- name: Installing Package
+  hosts: 172.31.48.162
+  gather_facts: no
+  become: true
+
+  tasks:
+  - name: Install Apache Package 
+    yum: 
+      name: httpd
+      state: installed
+    notify: Start the httpd service
+
+  - name: Copying index.html
+    copy: 
+      src: /home/ansadmin/index.html
+      dest: /var/www/html
+
+  handlers:
+  - name: Start the httpd service
+    service: 
+      name: httpd
+      state: started
+
+
+# Passing Variable in the playbook
+
+// user_name: Gaurav
+
+# vi create_user.yml
+
+---
+- hosts: all
+  become: true
+
+  vars_files: 
+    - /home/ansadmin/user.yml
+  
+  tasks:
+  - name: Create a User called {{ user_name }}
+    user:
+      name: "{{ user_name }}"
+
+  - name: Create a directory
+    file:
+      path: /opt/{{ user_name }}_temp
+      state: directory
+      mode: 0755
+      owner: "{{ user_name }}"
+      group: "{{ user_name }}"
+      recurse: yes
+
+
+# ansible-playbook create_user.yml --extra-vars "user_name=Atlee Kumar"  //passing variable at run time
+
+
+
